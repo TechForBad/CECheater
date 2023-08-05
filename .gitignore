@@ -1,0 +1,15 @@
+.vs
+*.vcxproj.user
+*.suo
+*.aps
+*.sdf
+*.dir
+*.log
+*.ilk
+*.exp
+*.opensdf
+*.tlog
+*.pdb
+
+x64
+bin64
