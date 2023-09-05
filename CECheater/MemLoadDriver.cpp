@@ -473,7 +473,7 @@ static BYTE shellcode_JmpDriverEntry[] = {
 };
 
 // 加载自己的未签名驱动
-bool DBK_LoadMyDriver(const wchar_t* driverFileName, const wchar_t* driverName)
+bool DBK_LoadMyDriver(LoadType loadType, const wchar_t* driverFilePath, const wchar_t* driverName)
 {
     bool result = true;
 
@@ -492,14 +492,6 @@ bool DBK_LoadMyDriver(const wchar_t* driverFileName, const wchar_t* driverName)
     {
         // 构造映像内存Image
         // 1.将文件映射到内存pFileBuffer，文件大小为fileBufferLen，映像大小为imageSize
-        WCHAR driverFilePath[MAX_PATH] = { 0 };
-        if (!GetCurrentModuleDirPath(driverFilePath))
-        {
-            LOG("GetCurrentModuleDirPath failed");
-            result = false;
-            break;
-        }
-        wcscat(driverFilePath, driverFileName);
         pFileBuffer = LoadFileToMemory(driverFilePath, fileBufferLen);
         if (NULL == pFileBuffer || 0 == fileBufferLen)
         {
@@ -563,8 +555,7 @@ bool DBK_LoadMyDriver(const wchar_t* driverFileName, const wchar_t* driverName)
         // 获取驱动起始地址
         UINT64 pDriverInitialize = (UINT64)CONVERT_RVA(pKernelImage, pImageNtHeaders->OptionalHeader.AddressOfEntryPoint);
 
-        bool useIoCreateDriver = true;
-        if (useIoCreateDriver)
+        if (LoadByIoCreateDriver == loadType)
         {
             // 构造调用IoCreateDriver来创建驱动的shellcode
             // 1.shellcode大小为shellcodeSize
@@ -608,7 +599,7 @@ bool DBK_LoadMyDriver(const wchar_t* driverFileName, const wchar_t* driverName)
                 break;
             }
         }
-        else
+        else if (LoadByShellcode == loadType)
         {
             // 构造直接调用DriverEntry的shellcode
             shellcodeSize = sizeof(shellcode_JmpDriverEntry);

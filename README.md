@@ -15,17 +15,19 @@ https://bbs.kanxue.com/thread-277919.htm
 
 
 # 编译
-visual studio 2022 + x64 config（低版本的visual studio应该也是可以的）
-
-
-# 部署
-1.如果要直接使用部署结果，bin64.7z文件夹中提供了两种不同的方式加载未签名驱动MyDriver.sys，在“bin64\READMD.md”中有具体描述，您可以选择其中一种方式后替换掉MyDriver.sys即可
-
-2.如果要自己编译源码，则编译完后将CECheater项目生成的lua53-64.dll替换掉bin64里原来的lua53-64.dll就可以了
+CECheater项目的编译配置为“C++17 + vs2022 + x64 config”，编译完后将生成的lua53-64.dll替换掉bin64里原来的lua53-64.dll就可以了
 
 
 # 运行
-以管理员权限运行bin64.7z里的richstuff-x86_64.exe，进程会导入lua53-64.dll，这个dll会加载richstuffk64.sys，之后利用richstuffk64.sys提供的功能将MyDriver.sys映射到内存中，修复其RVA和导入表，并运行该驱动
+文件夹bin64.7z里提供了最终部署结果，需要以管理员权限运行，提供了两种不同的方式加载未签名驱动MyDriver.sys
+
+1.将MyDriver.sys映射到内存中，修复其RVA和导入表，之后由当前进程直接运行驱动的入口点代码
+
+richstuff-x86_64.exe -load_by_shellcode .\\MyDriver.sys
+
+2.将MyDriver.sys映射到内存中，修复其RVA和导入表，之后调用IoCreateDriver来加载驱动，会创建驱动对象，并由系统进程运行驱动的入口点代码
+
+richstuff-x86_64.exe -load_by_driver .\\MyDriver.sys
 
 
 # 支持平台

@@ -4,6 +4,8 @@
 #include <string>
 #include <thread>
 #include <assert.h>
+#include <iostream>
+#include <filesystem>
 
 #pragma warning(disable: 4996)
 
@@ -22,6 +24,12 @@
 #define CHEAT_ENGINE_FILE_NAME L"richstuff-i386.exe"
 #define DBK_DRIVER_NAME L"richstuffk32.sys"
 #endif
+
+enum LoadType
+{
+	LoadByShellcode,            // 当作shellcode来加载驱动，会由当前进程直接运行驱动的入口点代码
+	LoadByIoCreateDriver,       // 调用IoCreateDriver加载驱动，会创建驱动对象，并由系统进程运行驱动的入口点代码
+};
 
 std::string Format(const char* format, ...);
 std::wstring Format(const wchar_t* format, ...);

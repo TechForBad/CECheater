@@ -3,6 +3,61 @@
 #include "DBKControl.h"
 #include "MemLoadDriver.h"
 
+static LoadType g_LoadType;
+static WCHAR g_DriverFilePath[MAX_PATH] = { 0 };
+static WCHAR g_DriverName[100] = L"\\FileSystem\\";
+
+bool ParseCommandLine()
+{
+	int nArgs = 0;
+	LPWSTR* argList = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	if (nArgs < 3)
+	{
+		LOG("Number of command args is too few: %d", nArgs);
+        return false;
+	}
+
+    // 判断驱动文件是否存在
+	if (!std::filesystem::exists(argList[2]))
+	{
+		LOG("Parameter error, path not exist: %ws", argList[2]);
+        return false;
+	}
+    LOG("Find driver file path: %ws", g_DriverFilePath);
+
+    // 获取驱动文件绝对路径
+	std::filesystem::path driverFilePath = std::filesystem::absolute(argList[2]);
+	wcscpy(g_DriverFilePath, driverFilePath.c_str());
+
+    // 获取驱动文件名
+	std::wstring driverName = driverFilePath.stem();
+	if (driverName.length() > 90)
+	{
+		LOG("Parameter error, file name is too long: %ws", driverName.c_str());
+		return false;
+	}
+	wcscat(g_DriverName, driverName.c_str());
+
+    // 获取加载类型
+    if (0 == _wcsicmp(argList[1], L"-load_by_shellcode"))
+    {
+        g_LoadType = LoadByShellcode;
+        LOG("Parameter error, load type: load by shellcode");
+    }
+    else if (0 == _wcsicmp(argList[1], L"-load_by_driver"))
+    {
+		g_LoadType = LoadByIoCreateDriver;
+		LOG("load type: load by driver, driver name: %ws", g_DriverName);
+    }
+    else
+    {
+        LOG("Unknown load type: %ws", argList[1]);
+        return false;
+    }
+
+    return true;
+}
+
 void Worker()
 {
     // 提权
@@ -41,7 +96,7 @@ void Worker()
     LOG("init DBKDriver success");
 
     // 加载自定义驱动
-    if (!DBK_LoadMyDriver(DRIVER_TO_LOAD, DRIVER_NAME))
+    if (!DBK_LoadMyDriver(g_LoadType, g_DriverFilePath, g_DriverName))
     {
         LOG("load my driver failed");
         return;
@@ -59,6 +114,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
         __try
         {
+            if (!ParseCommandLine())
+            {
+                LOG("ParseCommandLine failed");
+                __leave;
+            }
+
             Worker();
         }
         __finally
