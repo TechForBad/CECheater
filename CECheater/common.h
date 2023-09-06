@@ -11,9 +11,6 @@
 
 #define WIN32_LEAN_AND_MEAN             // 从 Windows 头文件中排除极少使用的内容
 
-#define DRIVER_TO_LOAD L"MyDriver.sys"
-#define DRIVER_NAME L"\\FileSystem\\MyDriver"
-
 #define DBK_SERVICE_NAME L"RichStuff_Service_Name"
 #define DBK_PROCESS_EVENT_NAME L"RichStuff_Process_Event_Name"
 #define DBK_THREAD_EVENT_NAME L"RichStuff_Thread_Event_Name"
@@ -46,8 +43,8 @@ inline void log(
     const char* fmt, Args... args)
 {
     std::string log = Format(fmt, args...);
-    std::string allLog = Format("[%s]-%s(%d)::%s %s", tag, _file, _line, _fun, log.c_str());
-    OutputDebugStringA(allLog.c_str());
+    std::string allLog = Format("[%s]-%s(%d)::%s %s\n", tag, _file, _line, _fun, log.c_str());
+    printf(allLog.c_str());
 }
 #define LOG(...) \
   log(LOG_TAG, __FILENAME__, __LINE__, __FUNC__, __VA_ARGS__)
@@ -58,13 +55,15 @@ inline void wlog(
     const wchar_t* fmt, Args... args)
 {
     std::wstring log = Format(fmt, args...);
-    std::wstring allLog = Format(L"[%s]-%s(%d)::%s %ws", tag, _file, _line, _fun, log.c_str());
-    OutputDebugStringW(allLog.c_str());
+    std::wstring allLog = Format(L"[%s]-%s(%d)::%s %ws\n", tag, _file, _line, _fun, log.c_str());
+    wprintf(allLog.c_str());
 }
 #define WLOG(...) \
   wlog(LOG_TAG, __FILENAME__, __LINE__, __FUNC__, __VA_ARGS__)
 
+// 字符串转换
 std::wstring ConvertCharToWString(const char* charStr);
+std::string ConvertWCharToString(const wchar_t* wcharStr);
 
 // 提权
 BOOL AdjustProcessTokenPrivilege();

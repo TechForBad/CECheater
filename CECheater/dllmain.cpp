@@ -20,20 +20,20 @@ bool ParseCommandLine()
     // 判断驱动文件是否存在
 	if (!std::filesystem::exists(argList[2]))
 	{
-		LOG("Parameter error, path not exist: %ws", argList[2]);
+		LOG("Parameter error, path not exist: %ls", argList[2]);
         return false;
 	}
-    LOG("Find driver file path: %ws", g_DriverFilePath);
 
     // 获取驱动文件绝对路径
 	std::filesystem::path driverFilePath = std::filesystem::absolute(argList[2]);
 	wcscpy(g_DriverFilePath, driverFilePath.c_str());
+    LOG("Find driver file path: %ls", g_DriverFilePath);
 
     // 获取驱动文件名
 	std::wstring driverName = driverFilePath.stem();
 	if (driverName.length() > 90)
 	{
-		LOG("Parameter error, file name is too long: %ws", driverName.c_str());
+		LOG("Parameter error, file name is too long: %ls", driverName.c_str());
 		return false;
 	}
 	wcscat(g_DriverName, driverName.c_str());
@@ -42,16 +42,16 @@ bool ParseCommandLine()
     if (0 == _wcsicmp(argList[1], L"-load_by_shellcode"))
     {
         g_LoadType = LoadByShellcode;
-        LOG("Parameter error, load type: load by shellcode");
+        LOG("load type: load by shellcode");
     }
     else if (0 == _wcsicmp(argList[1], L"-load_by_driver"))
     {
 		g_LoadType = LoadByIoCreateDriver;
-		LOG("load type: load by driver, driver name: %ws", g_DriverName);
+		LOG("load type: load by driver, driver name: %ls", g_DriverName);
     }
     else
     {
-        LOG("Unknown load type: %ws", argList[1]);
+        LOG("Unknown load type: %ls", argList[1]);
         return false;
     }
 
@@ -114,12 +114,22 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
         __try
         {
+			// 输出重定向到父窗口控制台，方便观察打印日志
+			AttachConsole(ATTACH_PARENT_PROCESS);
+            if (NULL == freopen("CONOUT$", "w+t", stdout))
+            {
+                LOG("freopen failed");
+                __leave;
+            }
+
+            // 解析参数
             if (!ParseCommandLine())
             {
                 LOG("ParseCommandLine failed");
                 __leave;
             }
 
+            // 工作
             Worker();
         }
         __finally

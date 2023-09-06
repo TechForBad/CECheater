@@ -6,9 +6,9 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT driver_object, PUNICODE_STRING re
 	UNREFERENCED_PARAMETER(registry_path);
 	PAGED_CODE();
 
-	KdPrint(("Enter DriverEntry"));
+	DbgPrint("Enter DriverEntry");
 
-	KdPrint(("Leave DriverEntry"));
+	DbgPrint("Leave DriverEntry");
 
 	return STATUS_SUCCESS;
 }

@@ -89,15 +89,26 @@ std::wstring ConvertCharToWString(const char* charStr)
 {
 	std::wstring wstr;
 	int len = strlen(charStr);
-
-	int size = MultiByteToWideChar(CP_UTF8, 0, charStr, len, NULL, 0);
+	int size = MultiByteToWideChar(CP_UTF8, 0, charStr, len, NULL, NULL);
 	if (size > 0)
 	{
 		wstr.resize(size);
 		MultiByteToWideChar(CP_UTF8, 0, charStr, len, &wstr[0], size);
 	}
-
 	return wstr;
+}
+
+std::string ConvertWCharToString(const wchar_t* wcharStr)
+{
+	std::string str;
+	int wlen = wcslen(wcharStr);
+	int size = WideCharToMultiByte(CP_OEMCP, 0, wcharStr, wlen, NULL, 0, NULL, NULL);
+	if (size > 0)
+	{
+		str.resize(size);
+		WideCharToMultiByte(CP_OEMCP, 0, wcharStr, wlen, &str[0], size, NULL, NULL);
+	}
+	return str;
 }
 
 BOOL AdjustProcessTokenPrivilege()

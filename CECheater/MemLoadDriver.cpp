@@ -547,7 +547,7 @@ bool DBK_LoadMyDriver(LoadType loadType, const wchar_t* driverFilePath, const wc
         // 7.将R3映像内存pUserImage拷贝到R0映像内存pKernelImage中去
         if (!DBK_WriteProcessMem(4, (UINT64)pKernelImage, (UINT64)pUserImage, imageSize))
         {
-            LOG("DBK_WriteMem failed");
+            LOG("DBK_WriteProcessMem failed");
             result = false;
             break;
         }
@@ -555,6 +555,7 @@ bool DBK_LoadMyDriver(LoadType loadType, const wchar_t* driverFilePath, const wc
         // 获取驱动起始地址
         UINT64 pDriverInitialize = (UINT64)CONVERT_RVA(pKernelImage, pImageNtHeaders->OptionalHeader.AddressOfEntryPoint);
 
+        // 选择加载方式
         if (LoadByIoCreateDriver == loadType)
         {
             // 构造调用IoCreateDriver来创建驱动的shellcode
@@ -625,6 +626,12 @@ bool DBK_LoadMyDriver(LoadType loadType, const wchar_t* driverFilePath, const wc
                 result = false;
                 break;
             }
+        }
+        else
+        {
+			LOG("Unknown load type: %d", static_cast<int>(loadType));
+			result = false;
+			break;
         }
 
         // 执行shellcode
