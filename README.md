@@ -18,7 +18,7 @@ CECheater项目的编译配置为“C++17 + vs2022 + x64 config”，编译完�
 ```
 richstuff-x86_64.exe -load_by_shellcode .\\MyDriver.sys
 ```
-* 将MyDriver.sys映射到内存中，修复其RVA和导入表，之后调用IoCreateDriver来加载驱动，会创建驱动对象“\\FileSystem\\MyDriver”，并由系统进程运行驱动的入口点代码
+* 将MyDriver.sys映射到内存中，修复其RVA和导入表，之后调用IoCreateDriver来加载驱动，会创建驱动对象“\\FileSystem\\<Driver Name>”（此处为“\\FileSystem\\MyDriver”），并由系统进程运行驱动的入口点代码
 ```
 richstuff-x86_64.exe -load_by_driver .\\MyDriver.sys
 ```
